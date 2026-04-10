@@ -23,6 +23,7 @@ COPY package.json ./
 COPY src/ ./src/
 COPY public/ ./public/
 COPY views/ ./views/
+COPY .env  ./
 
 # Switch to non-root user
 USER appuser
