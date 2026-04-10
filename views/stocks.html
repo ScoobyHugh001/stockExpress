@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Lookup — Express App</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/" class="logo">Express App</a>
+      <ul id="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/stocks">Stocks</a></li>
+        <li><a href="/about">About</a></li>
+        <li id="nav-login"><a href="/login">Login</a></li>
+        <li id="nav-signup"><a href="/signup">Sign Up</a></li>
+        <li id="nav-logout" class="hidden"><a href="#" id="logout-link">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Stock Lookup</h1>
+    <p>Enter a ticker symbol to view the current price and recent trading history.</p>
+
+    <form id="stock-form" class="stock-search">
+      <input
+        type="text"
+        id="ticker-input"
+        name="symbol"
+        placeholder="e.g. AAPL, MSFT, TSLA"
+        required
+        autocomplete="off"
+      />
+      <button type="submit" class="btn btn-primary">Look Up</button>
+    </form>
+
+    <div id="stock-error" class="form-error hidden"></div>
+    <div id="stock-loading" class="hidden">Loading...</div>
+
+    <!-- Current quote card -->
+    <div id="quote-card" class="quote-card hidden">
+      <div class="quote-header">
+        <h2 id="quote-symbol"></h2>
+        <span id="quote-price" class="quote-price"></span>
+      </div>
+      <div class="quote-change">
+        <span id="quote-change"></span>
+        <span id="quote-pct"></span>
+      </div>
+      <div class="quote-details">
+        <div><span class="label">Open</span>  <span id="quote-open"></span></div>
+        <div><span class="label">High</span>  <span id="quote-high"></span></div>
+        <div><span class="label">Low</span>   <span id="quote-low"></span></div>
+        <div><span class="label">Prev Close</span> <span id="quote-pc"></span></div>
+      </div>
+    </div>
+
+    <!-- Candles table -->
+    <div id="candles-section" class="hidden">
+      <h3>30-Day Trading History</h3>
+      <div class="table-wrapper">
+        <table id="candles-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Open</th>
+              <th>High</th>
+              <th>Low</th>
+              <th>Close</th>
+              <th>Volume</th>
+            </tr>
+          </thead>
+          <tbody id="candles-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Express App</p>
+  </footer>
+
+  <script src="/js/stocks.js"></script>
+  <script src="/js/auth.js"></script>
+</body>
+</html>
