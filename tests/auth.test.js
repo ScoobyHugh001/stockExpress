@@ -1,9 +1,32 @@
+// Mock DynamoDB before any require that loads the app
+const mockDb = new Map();
+
+jest.mock('../src/config/dynamodb', () => {
+  const { GetCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
+  return {
+    TABLE_NAME: 'Users',
+    docClient: {
+      send: jest.fn(async (command) => {
+        if (command instanceof GetCommand) {
+          const email = command.input.Key.email;
+          return { Item: mockDb.get(email) || undefined };
+        }
+        if (command instanceof PutCommand) {
+          const item = command.input.Item;
+          mockDb.set(item.email, item);
+          return {};
+        }
+        throw new Error(`Unmocked command: ${command.constructor.name}`);
+      }),
+    },
+  };
+});
+
 const request = require('supertest');
 const app = require('../src/app');
-const { _users: users } = require('../src/controllers/authController');
 
 beforeEach(() => {
-  users.length = 0;
+  mockDb.clear();
 });
 
 describe('Auth — Happy Path', () => {
@@ -20,10 +43,10 @@ describe('Auth — Happy Path', () => {
       expect(res.status).toBe(201);
       expect(res.body.token).toBeDefined();
       expect(res.body.user).toMatchObject({
-        id: 1,
         name: 'Alice',
         email: 'alice@example.com',
       });
+      expect(res.body.user.id).toBeDefined();
       expect(res.body.user.password).toBeUndefined();
     });
   });
@@ -54,10 +77,10 @@ describe('Auth — Happy Path', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
-        id: 1,
         name: 'Alice',
         email: 'alice@example.com',
       });
+      expect(res.body.id).toBeDefined();
     });
   });
 

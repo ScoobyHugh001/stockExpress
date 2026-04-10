@@ -1,6 +1,29 @@
+// Mock DynamoDB before any require that loads the app
+const mockDb = new Map();
+
+jest.mock('../src/config/dynamodb', () => {
+  const { GetCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
+  return {
+    TABLE_NAME: 'Users',
+    docClient: {
+      send: jest.fn(async (command) => {
+        if (command instanceof GetCommand) {
+          const email = command.input.Key.email;
+          return { Item: mockDb.get(email) || undefined };
+        }
+        if (command instanceof PutCommand) {
+          const item = command.input.Item;
+          mockDb.set(item.email, item);
+          return {};
+        }
+        throw new Error(`Unmocked command: ${command.constructor.name}`);
+      }),
+    },
+  };
+});
+
 const request = require('supertest');
 const app = require('../src/app');
-const { _users: users } = require('../src/controllers/authController');
 
 // Mock the global fetch used by stockController
 const originalFetch = global.fetch;
@@ -11,7 +34,7 @@ beforeAll(async () => {
   process.env.FINNHUB_API_KEY = 'test-api-key';
 
   // Create a user and get a token for authenticated requests
-  users.length = 0;
+  mockDb.clear();
   const res = await request(app).post('/api/auth/signup').send({
     name: 'StockTestUser',
     email: 'stocktest@example.com',
@@ -22,7 +45,7 @@ beforeAll(async () => {
 
 afterAll(() => {
   global.fetch = originalFetch;
-  users.length = 0;
+  mockDb.clear();
 });
 
 function mockFetch(urlHandler) {
